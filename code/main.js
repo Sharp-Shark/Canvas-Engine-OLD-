@@ -1,9 +1,16 @@
+"use strict";
+
+import Draw from './utilDraw.js';
+import Input  from './utilInput.js';
+import Vector from './utilMath.js';
+
 let screen = document.getElementById('screen');
 screen.x = screen.getBoundingClientRect().left;
 screen.y = screen.getBoundingClientRect().top;
 let ctx = screen.getContext("2d");
 
-let kbKeys = {};
+const draw = new Draw(ctx);
+const input = new Input();
 
 function resizeCanvas () {
     screen.width = document.documentElement.clientWidth - 4;
@@ -16,16 +23,14 @@ CODE ABOVE IS FROM PREVIOUS ENGINE AND MIGHT BE REMOVED OR REFINED
 
 let cam = {pos: new Vector(), vel: new Vector(), zoom: 1, zoomVel: 0, angle: 0, angleVel: 0};
 
-let idToAssign = 0;
-
 let v = new Vector(0, 200);
 let u = new Vector(0, 0);
 let p = new Vector(500, 500);
 
 function main() {
-    draw.clear();
+    draw.clear(screen);
     // Apply forces
-    cam.vel.translate(new Vector(input.isKeyDown('d')-input.isKeyDown('a'), input.isKeyDown('s')-input.isKeyDown('w')).setScaler(2/cam.zoom).rotate(0-cam.angle));
+    cam.vel.translate(new Vector(input.isKeyDown('d')-input.isKeyDown('a'), input.isKeyDown('s')-input.isKeyDown('w')).scale(2/cam.zoom).rotate(0-cam.angle));
     cam.zoomVel += (input.isKeyDown('q')-input.isKeyDown('e')) * cam.zoom * 0.005;
     cam.angleVel += (input.isKeyDown('z')-input.isKeyDown('c')) * 0.035;
     // Apply vel
@@ -37,7 +42,7 @@ function main() {
     cam.zoomVel *= 0.8;
     cam.angleVel *= 0.5;
     // Update mouse world position
-    input.updateWorldMouse();
+    input.updateWorldMouse(cam, screen);
 
     // Change origin vector
     if(input.isKeyDown('space')) {
@@ -52,20 +57,20 @@ function main() {
 
     // Dot at world center
     draw.color = 'grey';
-    draw.circleFill(new Vector(0, 0).worldToScreen(), 10*cam.zoom);
+    draw.circleFill(new Vector(0, 0).worldToScreen(cam, screen), 10*cam.zoom);
     // Vector V and U
     draw.color = 'grey';
-    draw.circleStroke(u.clone().worldToScreen(), 200*cam.zoom);
+    draw.circleStroke(u.clone().worldToScreen(cam, screen), 200*cam.zoom);
     draw.width = 10*cam.zoom;
     draw.color = 'black';
-    draw.lineStroke(u.clone().worldToScreen(), v.clone().translate(u).worldToScreen());
-    draw.circleFill(u.clone().worldToScreen(), 5*cam.zoom);
-    draw.circleFill(v.clone().translate(u).worldToScreen(), 5*cam.zoom);
+    draw.lineStroke(u.clone().worldToScreen(cam, screen), v.clone().translate(u).worldToScreen(cam, screen));
+    draw.circleFill(u.clone().worldToScreen(cam, screen), 5*cam.zoom);
+    draw.circleFill(v.clone().translate(u).worldToScreen(cam, screen), 5*cam.zoom);
     // Vector P
-    draw.circleStroke(p.clone().worldToScreen(), 100*cam.zoom);
+    draw.circleStroke(p.clone().worldToScreen(cam, screen), 100*cam.zoom);
     // Dot at screen center
     draw.color = 'grey';
-    draw.circleFill(cam.pos.clone().flipY().worldToScreen(), 5);
+    draw.circleFill(cam.pos.clone().flipY().worldToScreen(cam, screen), 5);
     // Dot at cursor
     draw.color = 'black';
     draw.circleFill(input.mouse.pos, 5);
@@ -109,5 +114,5 @@ window.addEventListener('mouseup', (event) => {
 });
 
 window.addEventListener('mousemove', (event) => {
-    input.updateMouse(event);
+    input.updateMouse(screen, event);
 });
