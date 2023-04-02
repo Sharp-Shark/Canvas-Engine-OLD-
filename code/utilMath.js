@@ -25,7 +25,7 @@ class Base {
     };
 };
 
-class Vector extends Base {
+export class Vector extends Base {
     // Pre-defined vectors
     static zero = new Vector(0, 0);
     static up = new Vector(0, 1);
@@ -150,12 +150,12 @@ class Vector extends Base {
     };
 
     // Transforms from world to screen
-    worldToScreen() {
+    worldToScreen(cam, screen) {
         return this.clone().flipY().translate(cam.pos.clone().reflect()).rotate(cam.angle).scale(cam.zoom).translate(new Vector(screen.width/2, screen.height/2));
     };
     
     // Transforms from screen to world
-    screenToWorld() {
+    screenToWorld(cam, screen) {
         return this.clone().translate(new Vector(screen.width/-2, screen.height/-2)).scale(1/cam.zoom).rotate(0-cam.angle).translate(cam.pos).flipY();
     };
 };
@@ -168,7 +168,7 @@ class UniqueBase extends Base {
     };
 };
 
-class CircleCollider extends Base {
+export class CircleCollider extends Base {
     constructor(pos, radius) {
         super(Base);
         this.pos = pos;
@@ -183,7 +183,7 @@ class CircleCollider extends Base {
     };
 };
 
-class PhysObject extends UniqueBase {
+export class PhysObject extends UniqueBase {
     static physObjects = [];
     constructor(collider, mass=1, decel=1) {
         super(UniqueBase);

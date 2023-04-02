@@ -1,6 +1,6 @@
 "use strict";
 
-import Vector from "./utilMath.js";
+import {Vector} from "./utilMath.js";
 
 class Input {
     constructor() {
@@ -9,8 +9,8 @@ class Input {
     }
 
     updateMouse(screen, event) {
-        const screenX = screen.getBoundingClientRect().left;
-        const screenY = screen.getBoundingClientRect().top;
+        const screenX = screen.x;
+        const screenY = screen.y;
         this.mouse.pos.x = event.clientX - screenX;
         this.mouse.pos.y = event.clientY - screenY;
     };
