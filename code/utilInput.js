@@ -2,7 +2,7 @@
 
 import Vector from "./utilMath.js";
 
-export default class Input {
+class Input {
     constructor() {
         this.mouse = {pos: new Vector(), worldPos: new Vector(), down: false};
         this.keys = {};
@@ -32,3 +32,7 @@ export default class Input {
         this.keys[key.toLowerCase()] = false;
     };
 };
+
+const input = new Input();
+
+export { input };

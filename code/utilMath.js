@@ -1,37 +1,76 @@
-"use strict";
-
 Math.lerp = function(a, b, t) {
     return a*(1-t) + b*t;
 };
 
-export default class Vector {
+Math.range = function(start, end) {
+    let toReturn = [];
+    let count = start;
+    while(count < end) {
+        toReturn.push(count++);
+    };
+    return toReturn;
+};
+
+class Base {
+    constructor() {
+    };
+
+    // Creates a duplicate of the object
+    clone() {
+        let clone = new Vector();
+        for(let property in this) {
+            clone[property] = this[property];
+        };
+        return clone;
+    };
+};
+
+class Vector extends Base {
     // Pre-defined vectors
     static zero = new Vector(0, 0);
     static up = new Vector(0, 1);
     static left = new Vector(-1, 0)
     static down = new Vector(0, -1);
     static right = new Vector(1, 0);
-
     constructor(x=0, y=0) {
+        super(Base);
         this.x = x;
         this.y = y;
     };
 
-    get angle() {
+    // Gets and sets the vector's angle
+    getAngle() {
         return Math.atan2(this.y, this.x);
-    }
+    };
 
-    set angle(angle) {
+    setAngle(angle) {
         return this.rotate(angle - this.angle);
     };
 
-    get scaler() {
-        return this.getDistTo(new Vector());
+    get angle() {
+        return this.getAngle();
     }
 
-    set scaler(scaler) {
+    set angle(angle) {
+        return this.setAngle(angle);
+    };
+
+    // Gets and sets the scaler aka magnitude
+    getScaler() {
+        return this.getDistTo(new Vector());
+    };
+
+    setScaler(scaler) {
         if(this.scaler == 0) {return this;};
         return this.scale(scaler / this.scaler);
+    };
+
+    get scaler() {
+        return this.getScaler();
+    };
+
+    set scaler(scaler) {
+        return this.setScaler(scaler);
     };
 
     // Clamps the vector's magnitude
@@ -111,20 +150,57 @@ export default class Vector {
     };
 
     // Transforms from world to screen
-    worldToScreen(cam, screen) {
+    worldToScreen() {
         return this.clone().flipY().translate(cam.pos.clone().reflect()).rotate(cam.angle).scale(cam.zoom).translate(new Vector(screen.width/2, screen.height/2));
     };
-
+    
     // Transforms from screen to world
-    screenToWorld(cam, screen) {
+    screenToWorld() {
         return this.clone().translate(new Vector(screen.width/-2, screen.height/-2)).scale(1/cam.zoom).rotate(0-cam.angle).translate(cam.pos).flipY();
     };
+};
 
-    clone() {
-        let clone = new Vector();
-        for(let property in this) {
-            clone[property] = this[property];
+class UniqueBase extends Base {
+    static highestId = 0;
+    constructor() {
+        super(Base);
+        this.id = UniqueBase.highestId++;
+    };
+};
+
+class CircleCollider extends Base {
+    constructor(pos, radius) {
+        super(Base);
+        this.pos = pos;
+        this.radius = radius;
+    };
+    isColliding(collider) {
+        if(this.pos.getDistTo(collider.pos) <= this.radius + collider.radius) {
+            return true;
+        } else {
+            return false;
         };
-        return clone;
-    }
+    };
+};
+
+class PhysObject extends UniqueBase {
+    static physObjects = [];
+    constructor(collider, mass=1, decel=1) {
+        super(UniqueBase);
+        this.collider = collider;
+        this.vel = new Vector();
+        this.mass = mass;
+        this.decel = decel;
+    };
+    solveCollision(physObject) {
+        if(!this.collider.isColliding(physObject.collider)) {return;};
+        let oldPos = this.collider.pos.clone()
+        this.collider.pos.moveTowards(physObject.collider.pos, 0-(this.collider.radius+physObject.collider.radius-this.collider.pos.getDistTo(physObject.collider.pos)));
+        this.vel.angle = oldPos.clone().translate(this.collider.pos.clone().reflect()).angle - Math.PI;
+        this.vel.scale(this.decel);
+    };
+    physUpdate() {
+        this.collider.pos.translate(this.vel);
+        this.vel.scale(this.decel);
+    };
 };
