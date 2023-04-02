@@ -11,7 +11,7 @@ Math.range = function(start, end) {
     return toReturn;
 };
 
-class Base {
+export class Base {
     constructor() {
     };
 
@@ -22,6 +22,14 @@ class Base {
             clone[property] = this[property];
         };
         return clone;
+    };
+};
+
+export class UniqueBase extends Base {
+    static highestId = 0;
+    constructor() {
+        super(Base);
+        this.id = UniqueBase.highestId++;
     };
 };
 
@@ -160,47 +168,81 @@ export class Vector extends Base {
     };
 };
 
-class UniqueBase extends Base {
-    static highestId = 0;
-    constructor() {
-        super(Base);
-        this.id = UniqueBase.highestId++;
+// Can be used for cameras, particles and things without collision that have velocity
+export class KinematicObject extends UniqueBase {
+    static objects = [];
+    static oldObjects = [];
+
+    static updateObjects() {
+        this.oldObjects = [];
+        for(let object of this.objects) {
+            this.oldObjects.push(object.clone());
+        };
+        for(let object of this.objects) {
+            object.update();
+        };
+    };
+
+    constructor(pos=new Vector(), radius=1, mass=1, decel=1) {
+        super(UniqueBase);
+        this.pos = pos;
+        this.vel = new Vector();
+        this.radius = radius;
+        this.mass = mass;
+        this.decel = decel;
+        KinematicObject.objects.push(this);
+    };
+
+    update() {
+        this.physUpdate();
+        this.logicUpdate();
+    };
+
+    physUpdate() {
+        this.pos.translate(this.vel);
+        this.vel.scale(this.decel);
+    };
+
+    logicUpdate() {
     };
 };
 
-export class CircleCollider extends Base {
-    constructor(pos, radius) {
-        super(Base);
+export class PhysObject extends KinematicObject {
+    static objects = [];
+    static oldObjects = [];
+
+    constructor(pos=new Vector(), radius=1, mass=1, decel=1) {
+        super(KinematicObject);
         this.pos = pos;
+        this.vel = new Vector();
         this.radius = radius;
+        this.mass = mass;
+        this.decel = decel;
+        PhysObject.objects.push(this);
     };
-    isColliding(collider) {
-        if(this.pos.getDistTo(collider.pos) <= this.radius + collider.radius) {
+
+    isColliding(physObject) {
+        if(this.pos.getDistTo(physObject.pos) <= this.radius + physObject.radius) {
             return true;
         } else {
             return false;
         };
     };
-};
-
-export class PhysObject extends UniqueBase {
-    static physObjects = [];
-    constructor(collider, mass=1, decel=1) {
-        super(UniqueBase);
-        this.collider = collider;
-        this.vel = new Vector();
-        this.mass = mass;
-        this.decel = decel;
-    };
+    
+    // Collisions are still WIP
     solveCollision(physObject) {
-        if(!this.collider.isColliding(physObject.collider)) {return;};
-        let oldPos = this.collider.pos.clone()
-        this.collider.pos.moveTowards(physObject.collider.pos, 0-(this.collider.radius+physObject.collider.radius-this.collider.pos.getDistTo(physObject.collider.pos)));
-        this.vel.angle = oldPos.clone().translate(this.collider.pos.clone().reflect()).angle - Math.PI;
+        if(!this.isColliding(physObject) || this.id == physObject.id) {return;};
+        let oldPos = this.pos.clone()
+        this.pos.moveTowards(physObject.pos, 0-(this.radius+physObject.radius-this.pos.getDistTo(physObject.pos)));
+        this.vel.angle = oldPos.clone().translate(this.pos.clone().reflect()).angle - Math.PI;
         this.vel.scale(this.decel);
     };
+
     physUpdate() {
-        this.collider.pos.translate(this.vel);
+        for(let object of PhysObject.oldObjects) {
+            this.solveCollision(object);
+        };
+        this.pos.translate(this.vel);
         this.vel.scale(this.decel);
     };
 };

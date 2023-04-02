@@ -1,7 +1,7 @@
 "use strict";
 
 import Draw from './utilDraw.js';
-import { Vector, PhysObject, CircleCollider } from './utilMath.js';
+import { Base, UniqueBase, Vector, KinematicObject, PhysObject } from './utilMath.js';
 import { input }  from './utilInput.js';
 
 let screen = document.getElementById('screen');
@@ -22,8 +22,8 @@ CODE ABOVE IS FROM PREVIOUS ENGINE AND MIGHT BE REMOVED OR REFINED
 
 let cam = {pos: new Vector(), vel: new Vector(), zoom: 1, zoomVel: 0, angle: 0, angleVel: 0};
 
-let pb2 = new PhysObject(new CircleCollider(new Vector(0, 200), 50));
-let pb = new PhysObject(new CircleCollider(new Vector(200, 0), 50));
+let pb2 = new PhysObject(new Vector(0, 200), 50);
+let pb = new PhysObject(new Vector(200, 0), 50);
 pb.decel = 0.99;
 
 function main() {
@@ -45,11 +45,10 @@ function main() {
 
     // Change relative-to-origin displacement vector
     if(input.mouse.down) {
-        pb.vel.translate(input.mouse.pos.clone().screenToWorld(cam, screen).translate(pb.collider.pos.clone().reflect()).setScaler(0.1));
+        pb.vel.translate(input.mouse.pos.clone().screenToWorld(cam, screen).translate(pb.pos.clone().reflect()).setScaler(0.1));
     };
     
-    pb.physUpdate();
-    pb.solveCollision(pb2);
+    PhysObject.updateObjects();
 
     // Dot at world center
     draw.color = 'grey';
@@ -57,8 +56,8 @@ function main() {
     // Draw Player
     draw.color = 'black';
     draw.width = 10*cam.zoom;
-    draw.circleStroke(pb.collider.pos.clone().worldToScreen(cam, screen), pb.collider.radius*cam.zoom);
-    draw.circleStroke(pb2.collider.pos.clone().worldToScreen(cam, screen), pb2.collider.radius*cam.zoom);
+    draw.circleStroke(pb.pos.clone().worldToScreen(cam, screen), pb.radius*cam.zoom);
+    draw.circleStroke(pb2.pos.clone().worldToScreen(cam, screen), pb2.radius*cam.zoom);
     // Dot at screen center
     draw.color = 'grey';
     draw.circleFill(cam.pos.clone().flipY().worldToScreen(cam, screen), 5);
