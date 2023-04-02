@@ -1,23 +1,34 @@
-class input {
-    static mouse = {pos: new Vector(), worldPos: new Vector(), down: false};
-    static keys = {};
-    static updateMouse(event) {
-        screenX = screen.getBoundingClientRect().left;
-        screenY = screen.getBoundingClientRect().top;
+"use strict";
+
+import Vector from "./utilMath.js";
+
+export default class Input {
+    constructor() {
+        this.mouse = {pos: new Vector(), worldPos: new Vector(), down: false};
+        this.keys = {};
+    }
+
+    updateMouse(screen, event) {
+        const screenX = screen.getBoundingClientRect().left;
+        const screenY = screen.getBoundingClientRect().top;
         this.mouse.pos.x = event.clientX - screenX;
         this.mouse.pos.y = event.clientY - screenY;
     };
-    static updateWorldMouse() {
-        this.mouse.worldPos = this.mouse.pos.screenToWorld();
+
+    updateWorldMouse(cam, screen) {
+        this.mouse.worldPos = this.mouse.pos.screenToWorld(cam, screen);
     };
-    static isKeyDown(key) {
+
+    isKeyDown(key) {
         if(this.keys[key.toLowerCase()]) {return true;};
         return false;
     };
-    static setKeyDown(key) {
+
+    setKeyDown(key) {
         this.keys[key.toLowerCase()] = true;
     };
-    static setKeyUp(key) {
+
+    setKeyUp(key) {
         this.keys[key.toLowerCase()] = false;
     };
 };

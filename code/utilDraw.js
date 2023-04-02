@@ -1,35 +1,46 @@
-class draw {
-    static width = 1;
-    static color = 'black';
-    static clear() {
-        ctx.clearRect(0, 0, screen.width, screen.height);
+"use strict";
+
+export default class Draw {
+    constructor(ctx) {
+        this.ctx = ctx;
+        this.width = 1;
+        this.color = "black";
+    }
+
+    clear(screen) {
+        this.ctx.clearRect(0, 0, screen.width, screen.height);
         //ctx.beginPath();
     };
-    static circle(vector, radius) {
-        ctx.arc(vector.x, vector.y, radius, 0, Math.PI*2);
+
+    circle(vector, radius) {
+        this.ctx.arc(vector.x, vector.y, radius, 0, Math.PI*2);
     };
-    static circleStroke(vector, radius) {
-        ctx.lineWidth = this.width;
-        ctx.strokeStyle = this.color;
-        ctx.beginPath();
+
+    circleStroke(vector, radius) {
+        this.ctx.lineWidth = this.width;
+        this.ctx.strokeStyle = this.color;
+        this.ctx.beginPath();
         this.circle(vector, radius);
-        ctx.stroke()
+        this.ctx.stroke()
     };
-    static circleFill(vector, radius) {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
+
+    circleFill(vector, radius) {
+        this.ctx.fillStyle = this.color;
+        this.ctx.beginPath();
         this.circle(vector, radius);
-        ctx.fill();
+        this.ctx.fill();
     };
-    static line(vectorStart, vectorEnd) {
-        ctx.moveTo(vectorStart.x, vectorStart.y);
-        ctx.lineTo(vectorEnd.x, vectorEnd.y);
+
+    line(vectorStart, vectorEnd) {
+        this.ctx.moveTo(vectorStart.x, vectorStart.y);
+        this.ctx.lineTo(vectorEnd.x, vectorEnd.y);
     };
-    static lineStroke(vectorStart, vectorEnd) {
-        ctx.lineWidth = this.width;
-        ctx.strokeStyle = this.color;
-        ctx.beginPath();
+
+    lineStroke(vectorStart, vectorEnd) {
+        this.ctx.lineWidth = this.width;
+        this.ctx.strokeStyle = this.color;
+        this.ctx.beginPath();
         this.line(vectorStart, vectorEnd);
-        ctx.stroke();
+        this.ctx.stroke();
     };
 };
